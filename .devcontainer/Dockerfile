@@ -1,11 +1,16 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.209.6/containers/ubuntu/.devcontainer/base.Dockerfile
+FROM ubuntu:rolling
 
-# [Choice] Ubuntu version (use hirsuite or bionic on local arm64/Apple Silicon): hirsute, focal, bionic
-ARG VARIANT="hirsute"
-FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
 
-# [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --shell /bin/bash --home-dir /home/vscode --create-home --skel /etc/skel --gid $USER_GID vscode
 
+RUN apt-get update && \
+    export DEBIAN_FRONTEND=noninteractive && \
+    apt-get -y install --no-install-recommends \
+        ca-certificates sudo curl git dasm make
 
+RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
